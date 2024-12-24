@@ -37,18 +37,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - run: |
-          pwd
-          ls ${{ github.workspace }}
-          ls ${{ github.workspace }}/blog
-
       - run: npm ci
 
       - run: python ./weasel_testing_appcast.py
 
+      - name: Deploy luna pinyin and stroke
+        uses: rimeinn/deploy-schema@dev
+        with:
+          user-recipe-list: |-
+            luna-pinyin
+            stroke
+          schema-list:
+            luna_pinyin
+            stroke
+
       - run: |
+          mv /tmp/deploy-schema/artifact.zip source/online/rime.zip
           hexo clean
           hexo generate
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: public
+          path: |
+            public
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
